@@ -1,7 +1,6 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext,useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { DataContext } from "../context/DataProvider";
-import { API } from "../Utils/handleApi";
 import { AddCircleOutline } from "@mui/icons-material";
 import {
   Box,
@@ -9,112 +8,123 @@ import {
   FormControl,
   InputBase,
   TextareaAutosize,
+  Tooltip,
+  styled,
 } from "@mui/material";
+import { API, createPostApi,} from "../Utils/handleApi";
+import blogImage from '../Images/blog2.jpg';
+
+const Container = styled(Box)(({theme})=>({
+  margin:'50px 100px',
+  [theme.breakpoints.down('md')]:{
+    margin:0
+  }
+}))
 
 const CreatePost = () => {
-  const [post, setPost] = useState({
-    title: "",
-    description: "",
-    picture: "",
-    username: "",
-    categories: "",
-    createdDate: new Date(),
-  });
-
-  const [file, setFile] = useState("");
-  const { account } = useContext(DataContext);
-  
   const location = useLocation();
   const navigate = useNavigate();
 
-  const imageURL = post?.picture
-    ? post?.picture
-    : "https://png.pngtree.com/png-vector/20220810/ourmid/pngtree-blogging-concept-picture-writer-laptop-png-image_5722986.png";
+  const { accountData } = useContext(DataContext);
+  const postCategory = location.search?.split("=")[1] || "All";
+  const postUsername = accountData?.username;
+  
+  const [post, setPost] = useState({
+    title: '',
+    description: '',
+    picture: '',
+    username: '',
+    categories: '',
+    createdDate: new Date(),
+  });
+
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+
+
 
   const handleChange = (e) => {
     setPost({ ...post, [e.target.name]: e.target.value });
   };
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    setFile(selectedFile);
-    console.log("File set:", selectedFile);
-  };
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
 
-  const getImage = async () => {
-    try {
-      if (file) {
-        const formData = new FormData();
-        formData.append("name", file.name);
-        formData.append("file", file);
-        //Api Call
-        console.log("Form data before API call:", formData);
-        const response = await API.uploadFile(formData);
-        post.picture = response?.data;
+    // Check if a file is selected
+    if (file) {
+      // Read the file as a data URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedFile(file);
+        setPreviewUrl(reader.result);
+        // Update the source of the existing image
+        const existingImage = document.getElementById('existingImage');
+        if (existingImage) {
+          existingImage.src = reader.result;
+        }
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      // Reset the source of the existing image to the default image
+      const existingImage = document.getElementById('existingImage');
+      if (existingImage) {
+        existingImage.src = blogImage;
       }
-    } catch (error) {
-      console.log("Failed to Upload Image!");
     }
-  }
-  
-  // const getImage = async () => {
-  //   try {
-  //     if (file) {
-  //       const formData = new FormData();
-  //       formData.append("name", file.name);
-  //       formData.append("file", file);
-  
-  //       // API Call to upload the image
-  //       const uploadResponse = await fetch('http://localhost:5000/api/file/upload', {
-  //         method: 'POST',
-  //         body: formData,
-  //       });
-  
-  //       const uploadData = await uploadResponse.json();
-  
-  //       if (uploadResponse.ok) {
-  //         // setPost({ ...post, picture: uploadData.data });
-  //       } else {
-  //         console.log('Image upload API error:', uploadData);
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.log("Failed to Upload Image!", error);
-  //   }
-  // }
-  
-
-  console.log("image file: ", file);
-
-  useEffect(() => {
-    getImage();
-    post.categories = location.search?.split("=")[1] || "All";
-    post.username = account?.username;
-    // eslint-disable-next-line
-  }, [file]);
+  };  
 
   const saveBlog = async () => {
-    try {
-      let response = await API.createPost(post);
-      if (response.isSuccess) {
-        navigate("/");
-      }
-    } catch (error) {
-      console.log("Failed to Publish the Post!");
-    }
+  
+    setPost((prevPost) => {
+      const updatedPost = {
+        ...prevPost,
+        title: post.title || "", // Provide a default title if not entered
+        description: post.description || "", // Provide a default description if not entered
+        picture: selectedFile || "", // Use the selected file if available
+        username: postUsername || "", // Provide a default username if not available
+        categories: postCategory || "", // Provide a default category if not available
+      };
+      console.log("Updated Post Data:", updatedPost);
+      return updatedPost;
+    });
+   try{
+    let formData = new FormData();
+    formData.append("photo", post.picture);
+    formData.append("username", post.username);
+    formData.append("categories", post.categories);
+    formData.append("title", post.title);
+    formData.append("description", post.description);
+    console.log(formData)
+   
+    let response = await API.createPost(formData);
+    console.log(response)
+   
+   if(response.isSuccess){
+    navigate('/');
+    console.log('Add Successfully!')
+   }
+
+  }catch(error){
+   console.log('Failed to add Post!');
+   }
   }
 
   return (
     <>
-      <Box sx={{ margin: "50px 100px" }}>
+      <Container>
         <form>
           <img
-            src={imageURL}
-            alt="PostImage"
+          id="existingImage"
+          src={previewUrl || blogImage}
+          alt="PostImage"
             style={{
               width: "100%",
               height: "50vh",
               objectFit: "cover",
+              marginBottom:'20px',
+              borderRadius:'20px'
             }}
           />
 
@@ -125,41 +135,56 @@ const CreatePost = () => {
               flexDirection: "row",
             }}
           >
-            <label htmlFor="fileInput">
+            <label htmlFor="fileInput" style={{border:'1px solid #878787',padding:'5px',cursor:'pointer'}}>
               {" "}
+              <Tooltip title='Select Image'>              
               <AddCircleOutline fontSize="large" color="action" />
+              </Tooltip>
             </label>
             <input
               type="file"
               id="fileInput"
+              name="photo"
               style={{ display: "none" }}
               onChange={handleFileChange}
             />
             <InputBase
               placeholder="Title"
-              sx={{ flex: 1, margin: "0 30px", fontSize: "25px" }}
+              sx={{ 
+                flex: 1, 
+                margin: "0 30px", 
+                fontSize: "25px",
+                borderBottom:'1px solid #878787',
+                paddingLeft:'10px'
+               }}
               onChange={handleChange}
               name="title"
             />
-            <Button variant="contained" onClick={saveBlog}>
+            <Button variant="contained" onClick={saveBlog} color="warning">
               Publish
             </Button>
           </FormControl>
+          <Box sx={{marginTop:'10px',display:'flex',justifyContent:'center'}}>
           <TextareaAutosize
             minRows={5}
             placeholder="Write Your Post..."
             style={{
-              width: "100%",
+              border:'1px solid #878787',
+              width: "90%",
+              height:'250px',
               marginTop: "50px",
               fontSize: "18px",
-              border: "none",
+              padding:'20px',
               resize: "none",
+              outline:'none',
+              boxSizing:'border-box'
             }}
             onChange={handleChange}
             name="description"
           />
+          </Box>
         </form>
-      </Box>
+      </Container>
     </>
   );
 };

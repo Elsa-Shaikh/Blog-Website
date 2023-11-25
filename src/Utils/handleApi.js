@@ -9,7 +9,8 @@ const axiosInstance = axios.create({
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
-  }
+  },
+  
 })
 
 axiosInstance.interceptors.request.use(
@@ -83,10 +84,12 @@ for (const [key, value] of Object.entries(SERVICE_URLS)) {
     axiosInstance({
       method: value.method,
       url: value.url,
-      data: body,
+      data: value.method === 'DELETE'?{}:body,
       responseType: value.responseType,
       headers:{
         authorization:getAccessToken(),
+        // "Content-Type": "multipart/form-data",
+
       },
       TYPE:getType(value,body),
       onUploadProgress: function (progressEvent) {
@@ -108,4 +111,24 @@ for (const [key, value] of Object.entries(SERVICE_URLS)) {
     })
   }
 
+
+
+  // const configPost = {
+  //   headers: {
+  //     // authorization:getAccessToken(),
+  //     "Content-Type": "multipart/form-data",
+  //   },
+  // };
+  
+  // export const createPostApi = async (formData) => {
+  //   try {  
+  //     const response = await axios.post(`${API_URL}/create`,formData, configPost);
+  //     return response;
+  //   } catch (error) {
+  //     console.log("Error While adding user through api!", error);
+  //   }
+  // };
+  
 export { API };
+
+

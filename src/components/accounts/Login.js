@@ -3,11 +3,14 @@ import React, { useContext, useState } from "react";
 import { API } from "../../Utils/handleApi";
 import { DataContext } from "../../context/DataProvider";
 import { useNavigate } from "react-router-dom";
+import blogImage from '../../Images/blog.png';
+
 
 const Component = styled(Box)`
-  width: 400px;
+  width: 450px;
   margin: auto;
   margin-top: 100px;
+  background-color:	rgb(170,167,158);
   box-shadow: 5px 2px 5px 2px rgb(0, 0, 0, 0.6);
 `;
 const Image = styled("img")({
@@ -30,15 +33,16 @@ const Wrapper = styled(Box)`
 `;
 const LoginButton = styled(Button)`
   text-transform: none;
-  background: #fb641b;
-  color: #fff;
+  background: white;
+  border:1px solid black;
+  color: black;
   height: 48px;
   border-radius: 2px;
 `;
 const SignButton = styled(Button)`
   text-transform: none;
-  background: #fff;
-  color: #2874f0;
+  background: black;
+  color: white;
   height: 48px;
   border-radius: 2px;
   box-shadow: 0 2px 4px 0 rgb(0 0 0/ 20%);
@@ -52,9 +56,8 @@ const Error = styled(Typography)`
   font-weight: 600;
 `;
 
+
 const Login = ({isUserAuthenticated}) => {
-  const imageURL =
-    "https://png.pngtree.com/png-vector/20220810/ourmid/pngtree-blogging-concept-picture-writer-laptop-png-image_5722986.png";
   const [account, setAccount] = useState("login");
   const [signupData, setSignupData] = useState({
     name: "",
@@ -106,7 +109,7 @@ const Login = ({isUserAuthenticated}) => {
     <> 
       <Component>
         <Box>
-          <Image src={imageURL} alt="login" />
+          <Image src={blogImage} alt="login" />
           {account === "login" ? (
             <Wrapper>
               <TextField

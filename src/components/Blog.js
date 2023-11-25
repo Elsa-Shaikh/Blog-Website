@@ -26,13 +26,15 @@ const Blog = () => {
   return (
     <>
       {blogs && blogs.length > 0 ? (
-        blogs.map((blog) => {
+        blogs.map(blog => {
           return (
             <>
-            <Grid item lg={3} sm={4} xs={12}>
-            <Link to={`/details/${blog._id}`}>
+            <Grid item lg={3} sm={4} xs={12} key={blog._id}>
+           
+            <Link to={`/details/${blog._id}`} style={{textDecoration:'none'}}>
             <BlogItem blog={blog}/>
             </Link>
+
             </Grid>
             </>
           );

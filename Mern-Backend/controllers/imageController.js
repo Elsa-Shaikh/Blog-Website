@@ -14,16 +14,34 @@ connection.once('open',()=>{
     gfs.collection('fs');
 })
 
+connection.once('open', () => {
+    gfs = grid(connection.db, mongoose.mongo);
+    gfs.collection('fs');
+});
 
 export const uploadImage = async (req, res) => {
-    console.log(req.file);
-    if(!req.file){
-        return res.status(404).json({msg:'File not Found!'});
-    }
+    try {
+        if (!req.file) {
+            return res.status(404).json({ msg: 'File not Found!' });
+        }
+        const writeStream = gfs.createWriteStream({
+            filename: req.file.originalname
+        });
 
-    const imageURL = `${url}/file/${req.file.filename}`;
-    return res.status(200).json(imageURL);
-}
+        writeStream.write(req.file.buffer);
+
+        writeStream.end(() => {
+            return res.status(200).json({ msg: 'File uploaded successfully!' });
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ msg: 'Internal Server Error' });
+    }
+};
+
+
+
+
 
 export const getImage = async (req, res) => {
    try{
@@ -38,3 +56,12 @@ export const getImage = async (req, res) => {
    }
 }
 
+// export const uploadImage = async (req, res) => {
+//     console.log(req.file);
+//     if(!req.file){
+//         return res.status(404).json({msg:'File not Found!'});
+//     }
+
+//     const imageURL = `${url}/file/${req.file.filename}`;
+//     return res.status(200).json(imageURL);
+// }

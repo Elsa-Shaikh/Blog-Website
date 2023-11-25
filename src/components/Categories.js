@@ -34,8 +34,8 @@ const Categories = () => {
       <Table sx={{ border: "1px solid rgba(224,224,224,1)" }}>
         <TableHead>
           <TableRow>
-            <TableCell>
-              <Link to={"/"}>All Categories</Link>
+            <TableCell sx={{textAlign:'center'}}>
+              <Link to={"/"} style={{textDecoration:'none',color:'#878787',fontSize:'16px'}}>All Categories</Link>
             </TableCell>
           </TableRow>
         </TableHead>
@@ -43,8 +43,8 @@ const Categories = () => {
           {categories.map((category) => {
             return (
               <TableRow key={category.id}>
-                <TableCell>
-                  <Link to={`/?category=${category.type}`}>
+                <TableCell sx={{textAlign:'center'}}>
+                  <Link to={`/?category=${category.type}`} style={{textDecoration:'none',color:'#878787',fontSize:'16px'}}>
                     {category.type}
                   </Link>
                 </TableCell>

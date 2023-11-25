@@ -16,7 +16,7 @@ export const userSignup = async (req, res) => {
     const newUser = new User(user);
     await newUser.save();
     // return res.status(200).json({status:200,success:true,newUser,message:"Account Created!"})
-    return res.status(200).json({ msg: "Account Created!" });
+    return res.status(200).json({ msg: "Account Created!",newUser });
   } catch (error) {
     // return res.status(500).json({status:500,success:false,message:"Internal Server Error!"})
     return res.status(500).json({ msg: "Internal Server Error!" });

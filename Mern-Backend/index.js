@@ -17,6 +17,8 @@ app.use(express.json()); // middleware to use the json
 
 
 app.use('/api',router);
+app.use("/uploads",express.static('./uploads'));
+
 
 app.listen(port,()=>{
     console.log(`Serve Successfully Running on http://localhost:${port}`);

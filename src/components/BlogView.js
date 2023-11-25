@@ -1,84 +1,147 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography, styled } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { API } from "../Utils/handleApi";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { DataContext } from "../context/DataProvider";
+import CompDialog from "../DialogBox/CompDialog";
+
+
+const Container = styled(Box)(({theme})=>({
+  margin:'50px 100px',
+  [theme.breakpoints.down('md')]:{
+    margin:0
+  }
+}))
+
 
 const BlogView = () => {
-  const [id] = useParams();
-  const [post, setPost] = useState([]);
-  const imageURL = post.picture
-    ? post.picture
-    : "https://png.pngtree.com/png-vector/20220810/ourmid/pngtree-blogging-concept-picture-writer-laptop-png-image_5722986.png";
+  const navigate = useNavigate();
+   const { accountData } = useContext(DataContext);
+   const { id } = useParams();
+   const [blog, setBlog] = useState({});
 
   const fetchData = async () => {
-    let response = API.getPostById(id);
-    if (response.isSuccess) {
-      setPost(response.data);
+    let response = await API.getPostById(id);
+        if (response.isSuccess) {
+      setBlog(response?.data.post);
     }
   };
 
-  const { account } = useContext(DataContext);
 
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line
   }, []);
+ 
+  const [open, setOpen] = useState(false);
 
-  return (
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+const handleDelete = async()=>{
+  try{
+  let response = await API.deletePost(blog._id);
+   if(response.isSuccess){
+    navigate('/');
+    console.log("Deleted!");
+   }}
+   catch(error){
+    console.log("Failed to Delete!",error);
+   }
+}
+
+
+   return (
     <>
-      <Box
-        sx={{
-          margin: "50px 100px",
-        }}
+      <Container
+        // sx={{
+        //   margin: "50px 100px",
+        // }}
       >
+<Chip 
+label={`Category: ${blog?.categories}`} 
+variant="filled" 
+color="success" 
+sx={{
+  fontSize: {
+    xs: '16px', // Font size for extra-small screens
+    sm: '18px', // Font size for small screens
+    md: '20px', // Font size for medium screens
+    lg: '24px', // Font size for large screens
+  },
+  padding:{
+    xs: '10px', 
+    sm: '10px', 
+    md: '20px', 
+    lg: '24px'
+  },
+  boxSizing:'border-box',
+  position:'relative',
+  top:'31px'
+}}
+  />
         <img
-          src={imageURL}
+          src={`http://localhost:5000/uploads/${blog?.picture}`}
           alt="BlogImage"
           style={{
+            borderRadius:'20px',
             width: "100%",
             height: "50vh",
             objectFit: "cover",
           }}
         />
+
         <Box
           sx={{
             float: "right",
           }}
         >
-          {account.username === post.username && (
+          {accountData.username === blog.username && (
             <>
               <EditIcon
                 color="info"
                 sx={{
+                  cursor:'pointer',
                   margin: "5px",
                   padding: "5px",
                   border: "1px solid #878787",
                 }}
+                onClick={handleOpen}
               />
               <DeleteIcon
                 color="error"
                 sx={{
+                  cursor:'pointer',
                   margin: "5px",
                   padding: "5px",
                   border: "1px solid #878787",
                 }}
+                onClick={handleDelete}
               />
             </>
           )}
         </Box>
         <Typography
           sx={{
-            fontSize: 38,
+            fontSize: {
+              xs:'16px',
+              sm:'16px',
+              md:'38px',
+              lg:'38px'
+            },
             fontWeight: 600,
             textAlign: "center",
             margin: "50px 0 10px 0",
             wordBreak: "break-word",
           }}
         >
-          {post.title}
+          {blog.title}
         </Typography>
         <Box
           sx={{
@@ -88,14 +151,14 @@ const BlogView = () => {
           }}
         >
           <Typography>
-            {" "}
-            Author:{" "}
+           
+            Author:
             <Box component={"span"} sx={{ fontWeight: 600 }}>
-              {post.username}
+              {blog.username}
             </Box>
           </Typography>
           <Typography sx={{ marginLeft: "auto" }}>
-            {new Date(post.createdDate).toDateString()}
+            {new Date(blog.createdDate).toDateString()}
           </Typography>
         </Box>
         <Typography
@@ -103,9 +166,12 @@ const BlogView = () => {
             wordBreak: "break-word",
           }}
         >
-          {post.description}
+          {blog.description}
         </Typography>
-      </Box>
+      </Container>
+
+      <CompDialog open={open} handleClose={handleClose} blogId={blog._id}/>
+     
     </>
   )
 };

@@ -8,11 +8,10 @@ const Home = () => {
   return (
     <>
     <Banner/>
-    <Grid container>
+    <Grid container sx={{marginBottom:'20px',marginTop:'20px'}}>
        <Grid item lg={2} sm={2} xs={12}><Categories/></Grid>
        <Grid container item lg={10} sm={10} xs={12}><Blog/></Grid>
     </Grid>
-  
     </>
   )
 }
